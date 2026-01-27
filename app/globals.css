@@ -2,7 +2,6 @@
 
 @import "tailwindcss";
 
-/* Animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -14,7 +13,6 @@
   }
 }
 
-/* Utility classes */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

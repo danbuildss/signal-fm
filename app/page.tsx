@@ -730,7 +730,7 @@ const Icons = {
 };
 
 // Logo Component - Matching the uploaded image style
-const Logo = ({ size = "default", color = "dark" }) => {
+const Logo = ({ size = "default", color = "dark" }: { size?: string; color?: string }) => {
   const textColor = color === "dark" ? "text-stone-900" : "text-stone-100";
   const sizeClasses = size === "large" ? "text-4xl md:text-5xl" : "text-xl";
   
@@ -743,7 +743,7 @@ const Logo = ({ size = "default", color = "dark" }) => {
 };
 
 // Skill level badge colors
-const skillColors = {
+const skillColors: { [key: string]: string } = {
   "Noob": "bg-emerald-50 text-emerald-700 border-emerald-200",
   "Intermediate": "bg-amber-50 text-amber-700 border-amber-200",
   "Advanced": "bg-violet-50 text-violet-700 border-violet-200",
@@ -751,7 +751,7 @@ const skillColors = {
 };
 
 // Podcast type colors
-const typeColors = {
+const typeColors: { [key: string]: string } = {
   "Micro Pod": "bg-sky-50 text-sky-700",
   "Macro Pod": "bg-indigo-50 text-indigo-700",
   "Signal Pod": "bg-orange-50 text-orange-600",
@@ -760,7 +760,12 @@ const typeColors = {
 };
 
 // Podcast Card Component with clickable social links
-const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
+const PodcastCard = ({ podcast, onSave, isSaved, index }: {
+  podcast: typeof podcastData[0];
+  onSave: (id: number) => void;
+  isSaved: boolean;
+  index: number;
+}) => {
   const hasAnyLink = podcast.links.x || podcast.links.spotify || podcast.links.youtube || podcast.links.website;
   
   return (
@@ -894,8 +899,13 @@ const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
 };
 
 // Filter Panel Component
-const FilterPanel = ({ filters, setFilters, isOpen, onClose }) => {
-  const toggleFilter = (category, value) => {
+const FilterPanel = ({ filters, setFilters, isOpen, onClose }: {
+  filters: { skillLevels: string[]; podcastTypes: string[]; topics: string[] };
+  setFilters: React.Dispatch<React.SetStateAction<{ skillLevels: string[]; podcastTypes: string[]; topics: string[] }>>;
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  const toggleFilter = (category: 'skillLevels' | 'podcastTypes' | 'topics', value: string) => {
     setFilters(prev => ({
       ...prev,
       [category]: prev[category].includes(value)
@@ -1027,8 +1037,20 @@ const FilterPanel = ({ filters, setFilters, isOpen, onClose }) => {
 };
 
 // Submission Form Component
-const SubmissionForm = ({ onClose }) => {
-  const [formData, setFormData] = useState({
+const SubmissionForm = ({ onClose }: { onClose: () => void }) => {
+  const [formData, setFormData] = useState<{
+    podcast_name: string;
+    host_name: string;
+    podcast_type: string;
+    skill_level: string;
+    topics: string[];
+    description: string;
+    spotify: string;
+    youtube: string;
+    website: string;
+    x_link: string;
+    email: string;
+  }>({
     podcast_name: '',
     host_name: '',
     podcast_type: '',
@@ -1043,7 +1065,7 @@ const SubmissionForm = ({ onClose }) => {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
   };
@@ -1293,7 +1315,7 @@ const SubmissionForm = ({ onClose }) => {
 };
 
 // Hero Section with updated logo
-const HeroSection = ({ onNavigate }) => {
+const HeroSection = ({ onNavigate }: { onNavigate: (view: string) => void }) => {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-stone-50 to-white">
       <div className="absolute inset-0 opacity-30">
@@ -1403,14 +1425,18 @@ export default function SignalFM() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [savedPodcasts, setSavedPodcasts] = useState([]);
-  const [filters, setFilters] = useState({
+  const [savedPodcasts, setSavedPodcasts] = useState<number[]>([]);
+  const [filters, setFilters] = useState<{
+    skillLevels: string[];
+    podcastTypes: string[];
+    topics: string[];
+  }>({
     skillLevels: [],
     podcastTypes: [],
     topics: [],
   });
 
-  const toggleSave = (id) => {
+  const toggleSave = (id: number) => {
     setSavedPodcasts(prev => 
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );

@@ -760,7 +760,7 @@ const typeColors = {
 };
 
 // Podcast Card Component with clickable social links
-const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
+const PodcastCard = ({ podcast, onSave, isSaved, index }: { podcast: typeof podcastData[number]; onSave: (id: number) => void; isSaved: boolean; index: number }) => {
   const hasAnyLink = podcast.links.x || podcast.links.spotify || podcast.links.youtube || podcast.links.website;
   
   return (
@@ -793,10 +793,10 @@ const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
 
       {/* Tags */}
       <div className="flex flex-wrap gap-2 mb-3">
-        <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${skillColors[podcast.skill_level]}`}>
+        <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${skillColors[podcast.skill_level as keyof typeof skillColors]}`}>
           {podcast.skill_level}
         </span>
-        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${typeColors[podcast.podcast_type]}`}>
+        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${typeColors[podcast.podcast_type as keyof typeof typeColors]}`}>
           {podcast.podcast_type}
         </span>
       </div>
@@ -894,8 +894,8 @@ const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
 };
 
 // Filter Panel Component
-const FilterPanel = ({ filters, setFilters, isOpen, onClose }) => {
-  const toggleFilter = (category, value) => {
+const FilterPanel = ({ filters, setFilters, isOpen, onClose }: { filters: { skillLevels: string[]; podcastTypes: string[]; topics: string[] }; setFilters: React.Dispatch<React.SetStateAction<{ skillLevels: string[]; podcastTypes: string[]; topics: string[] }>>; isOpen: boolean; onClose: () => void }) => {
+  const toggleFilter = (category: 'skillLevels' | 'podcastTypes' | 'topics', value: string) => {
     setFilters(prev => ({
       ...prev,
       [category]: prev[category].includes(value)
@@ -1033,13 +1033,13 @@ const FilterPanel = ({ filters, setFilters, isOpen, onClose }) => {
 };
 
 // Submission Form Component
-const SubmissionForm = ({ onClose }) => {
+const SubmissionForm = ({ onClose }: { onClose: () => void }) => {
   const [formData, setFormData] = useState({
     podcast_name: '',
     host_name: '',
     podcast_type: '',
     skill_level: '',
-    topics: [],
+    topics: [] as string[],
     description: '',
     spotify: '',
     youtube: '',
@@ -1049,7 +1049,7 @@ const SubmissionForm = ({ onClose }) => {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
   };
@@ -1299,7 +1299,7 @@ const SubmissionForm = ({ onClose }) => {
 };
 
 // Hero Section with updated logo
-const HeroSection = ({ onNavigate }) => {
+const HeroSection = ({ onNavigate }: { onNavigate: (view: string) => void }) => {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-stone-50 to-white">
       <div className="absolute inset-0 opacity-30">
@@ -1409,14 +1409,14 @@ export default function SignalFM() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [savedPodcasts, setSavedPodcasts] = useState([]);
+  const [savedPodcasts, setSavedPodcasts] = useState<number[]>([]);
   const [filters, setFilters] = useState({
-    skillLevels: [],
-    podcastTypes: [],
-    topics: [],
+    skillLevels: [] as string[],
+    podcastTypes: [] as string[],
+    topics: [] as string[],
   });
 
-  const toggleSave = (id) => {
+  const toggleSave = (id: number) => {
     setSavedPodcasts(prev => 
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );

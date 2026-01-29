@@ -730,7 +730,7 @@ const Icons = {
 };
 
 // Logo Component - Matching the uploaded image style
-const Logo = ({ size = "default", color = "dark" }: { size?: string; color?: string }) => {
+const Logo = ({ size = "default", color = "dark" }) => {
   const textColor = color === "dark" ? "text-stone-900" : "text-stone-100";
   const sizeClasses = size === "large" ? "text-4xl md:text-5xl" : "text-xl";
   
@@ -743,7 +743,7 @@ const Logo = ({ size = "default", color = "dark" }: { size?: string; color?: str
 };
 
 // Skill level badge colors
-const skillColors: { [key: string]: string } = {
+const skillColors = {
   "Noob": "bg-emerald-50 text-emerald-700 border-emerald-200",
   "Intermediate": "bg-amber-50 text-amber-700 border-amber-200",
   "Advanced": "bg-violet-50 text-violet-700 border-violet-200",
@@ -751,7 +751,7 @@ const skillColors: { [key: string]: string } = {
 };
 
 // Podcast type colors
-const typeColors: { [key: string]: string } = {
+const typeColors = {
   "Micro Pod": "bg-sky-50 text-sky-700",
   "Macro Pod": "bg-indigo-50 text-indigo-700",
   "Signal Pod": "bg-orange-50 text-orange-600",
@@ -760,21 +760,18 @@ const typeColors: { [key: string]: string } = {
 };
 
 // Podcast Card Component with clickable social links
-const PodcastCard = ({ podcast, onSave, isSaved, index }: {
-  podcast: typeof podcastData[0];
-  onSave: (id: number) => void;
-  isSaved: boolean;
-  index: number;
-}) => {
+const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const hasAnyLink = podcast.links.x || podcast.links.spotify || podcast.links.youtube || podcast.links.website;
   
   return (
     <div 
-      className="group bg-white rounded-2xl border border-stone-200/80 p-5 md:p-6 transition-all duration-300 hover:shadow-xl hover:shadow-stone-200/40 hover:border-stone-300 hover:-translate-y-1"
+      className={`group bg-white rounded-2xl border border-stone-200/80 p-5 md:p-6 transition-all duration-300 hover:shadow-xl hover:shadow-stone-200/40 hover:border-stone-300 cursor-pointer ${!isExpanded ? 'hover:-translate-y-1' : ''}`}
       style={{
         animation: `fadeInUp 0.5s ease-out ${index * 0.05}s forwards`,
         opacity: 0,
       }}
+      onClick={() => setIsExpanded(!isExpanded)}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -784,16 +781,23 @@ const PodcastCard = ({ podcast, onSave, isSaved, index }: {
           </h3>
           <p className="text-sm text-stone-500 truncate">{podcast.host_name}</p>
         </div>
-        <button 
-          onClick={() => onSave(podcast.id)}
-          className={`flex-shrink-0 p-2 rounded-full transition-all duration-200 ${
-            isSaved 
-              ? 'bg-orange-100 text-orange-500' 
-              : 'bg-stone-50 text-stone-400 hover:bg-stone-100 hover:text-stone-600'
-          }`}
-        >
-          {isSaved ? <Icons.BookmarkFilled /> : <Icons.Bookmark />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onSave(podcast.id); }}
+            className={`flex-shrink-0 p-2 rounded-full transition-all duration-200 ${
+              isSaved 
+                ? 'bg-orange-100 text-orange-500' 
+                : 'bg-stone-50 text-stone-400 hover:bg-stone-100 hover:text-stone-600'
+            }`}
+          >
+            {isSaved ? <Icons.BookmarkFilled /> : <Icons.Bookmark />}
+          </button>
+          <div className={`flex-shrink-0 p-2 rounded-full bg-stone-50 text-stone-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* Tags */}
@@ -815,8 +819,8 @@ const PodcastCard = ({ podcast, onSave, isSaved, index }: {
         ))}
       </div>
 
-      {/* Description */}
-      <p className="text-sm text-stone-600 leading-relaxed mb-4 line-clamp-2">
+      {/* Description - Expandable */}
+      <p className={`text-sm text-stone-600 leading-relaxed mb-4 transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'}`}>
         {podcast.description}
       </p>
 
@@ -899,13 +903,8 @@ const PodcastCard = ({ podcast, onSave, isSaved, index }: {
 };
 
 // Filter Panel Component
-const FilterPanel = ({ filters, setFilters, isOpen, onClose }: {
-  filters: { skillLevels: string[]; podcastTypes: string[]; topics: string[] };
-  setFilters: React.Dispatch<React.SetStateAction<{ skillLevels: string[]; podcastTypes: string[]; topics: string[] }>>;
-  isOpen: boolean;
-  onClose: () => void;
-}) => {
-  const toggleFilter = (category: 'skillLevels' | 'podcastTypes' | 'topics', value: string) => {
+const FilterPanel = ({ filters, setFilters, isOpen, onClose }) => {
+  const toggleFilter = (category, value) => {
     setFilters(prev => ({
       ...prev,
       [category]: prev[category].includes(value)
@@ -925,32 +924,30 @@ const FilterPanel = ({ filters, setFilters, isOpen, onClose }: {
     <>
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
           onClick={onClose}
         />
       )}
       
       <div className={`
-        fixed lg:relative inset-y-0 right-0 w-80 lg:w-64 bg-white lg:bg-transparent
-        transform transition-transform duration-300 ease-out z-50 lg:z-auto
-        ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
-        lg:transform-none overflow-y-auto border-l lg:border-0 border-stone-200
+        fixed inset-y-0 right-0 w-80 bg-white
+        transform transition-transform duration-300 ease-out z-50
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+        overflow-y-auto border-l border-stone-200 shadow-xl
       `}>
-        <div className="p-6 lg:p-0 lg:sticky lg:top-6">
-          <div className="flex items-center justify-between mb-6 lg:hidden">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
             <h3 className="font-serif text-xl font-semibold text-stone-900">Filters</h3>
-            <button onClick={onClose} className="p-2 text-stone-500 hover:text-stone-900 rounded-lg hover:bg-stone-100">
-              <Icons.Close />
-            </button>
-          </div>
-
-          <div className="hidden lg:flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-stone-900 uppercase tracking-wide">Filters</h3>
-            {hasActiveFilters && (
-              <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-medium">
-                {activeCount}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {hasActiveFilters && (
+                <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-medium">
+                  {activeCount} active
+                </span>
+              )}
+              <button onClick={onClose} className="p-2 text-stone-500 hover:text-stone-900 rounded-lg hover:bg-stone-100">
+                <Icons.Close />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-6">
@@ -1037,20 +1034,8 @@ const FilterPanel = ({ filters, setFilters, isOpen, onClose }: {
 };
 
 // Submission Form Component
-const SubmissionForm = ({ onClose }: { onClose: () => void }) => {
-  const [formData, setFormData] = useState<{
-    podcast_name: string;
-    host_name: string;
-    podcast_type: string;
-    skill_level: string;
-    topics: string[];
-    description: string;
-    spotify: string;
-    youtube: string;
-    website: string;
-    x_link: string;
-    email: string;
-  }>({
+const SubmissionForm = ({ onClose }) => {
+  const [formData, setFormData] = useState({
     podcast_name: '',
     host_name: '',
     podcast_type: '',
@@ -1065,7 +1050,7 @@ const SubmissionForm = ({ onClose }: { onClose: () => void }) => {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
   };
@@ -1315,7 +1300,7 @@ const SubmissionForm = ({ onClose }: { onClose: () => void }) => {
 };
 
 // Hero Section with updated logo
-const HeroSection = ({ onNavigate }: { onNavigate: (view: string) => void }) => {
+const HeroSection = ({ onNavigate }) => {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-stone-50 to-white">
       <div className="absolute inset-0 opacity-30">
@@ -1425,18 +1410,14 @@ export default function SignalFM() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [savedPodcasts, setSavedPodcasts] = useState<number[]>([]);
-  const [filters, setFilters] = useState<{
-    skillLevels: string[];
-    podcastTypes: string[];
-    topics: string[];
-  }>({
+  const [savedPodcasts, setSavedPodcasts] = useState([]);
+  const [filters, setFilters] = useState({
     skillLevels: [],
     podcastTypes: [],
     topics: [],
   });
 
-  const toggleSave = (id: number) => {
+  const toggleSave = (id) => {
     setSavedPodcasts(prev => 
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
@@ -1651,7 +1632,7 @@ export default function SignalFM() {
               </div>
               <button
                 onClick={() => setFilterOpen(true)}
-                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl border transition-colors lg:hidden ${
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl border transition-colors ${
                   activeFilterCount > 0 
                     ? 'bg-stone-900 text-white border-stone-900' 
                     : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
@@ -1660,7 +1641,9 @@ export default function SignalFM() {
                 <Icons.Filter />
                 Filters
                 {activeFilterCount > 0 && (
-                  <span className="text-xs bg-white text-stone-900 px-1.5 py-0.5 rounded-full">
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                    activeFilterCount > 0 ? 'bg-white text-stone-900' : 'bg-stone-100 text-stone-600'
+                  }`}>
                     {activeFilterCount}
                   </span>
                 )}
@@ -1670,7 +1653,7 @@ export default function SignalFM() {
             <div className="flex gap-8">
               <div className="flex-1">
                 {filteredPodcasts.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {filteredPodcasts.map((podcast, index) => (
                       <PodcastCard
                         key={podcast.id}
@@ -1705,15 +1688,6 @@ export default function SignalFM() {
                     )}
                   </div>
                 )}
-              </div>
-
-              <div className="hidden lg:block w-64 flex-shrink-0">
-                <FilterPanel
-                  filters={filters}
-                  setFilters={setFilters}
-                  isOpen={true}
-                  onClose={() => {}}
-                />
               </div>
             </div>
           </div>

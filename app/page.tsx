@@ -761,17 +761,15 @@ const typeColors = {
 
 // Podcast Card Component with clickable social links
 const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const hasAnyLink = podcast.links.x || podcast.links.spotify || podcast.links.youtube || podcast.links.website;
   
   return (
     <div 
-      className={`group bg-white rounded-2xl border border-stone-200/80 p-5 md:p-6 transition-all duration-300 hover:shadow-xl hover:shadow-stone-200/40 hover:border-stone-300 cursor-pointer ${!isExpanded ? 'hover:-translate-y-1' : ''}`}
+      className="group bg-white rounded-2xl border border-stone-200/80 p-5 md:p-6 transition-all duration-300 hover:shadow-xl hover:shadow-stone-200/40 hover:border-stone-300 hover:-translate-y-1"
       style={{
         animation: `fadeInUp 0.5s ease-out ${index * 0.05}s forwards`,
         opacity: 0,
       }}
-      onClick={() => setIsExpanded(!isExpanded)}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -781,23 +779,16 @@ const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
           </h3>
           <p className="text-sm text-stone-500 truncate">{podcast.host_name}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onSave(podcast.id); }}
-            className={`flex-shrink-0 p-2 rounded-full transition-all duration-200 ${
-              isSaved 
-                ? 'bg-orange-100 text-orange-500' 
-                : 'bg-stone-50 text-stone-400 hover:bg-stone-100 hover:text-stone-600'
-            }`}
-          >
-            {isSaved ? <Icons.BookmarkFilled /> : <Icons.Bookmark />}
-          </button>
-          <div className={`flex-shrink-0 p-2 rounded-full bg-stone-50 text-stone-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m6 9 6 6 6-6"/>
-            </svg>
-          </div>
-        </div>
+        <button 
+          onClick={(e) => { e.stopPropagation(); onSave(podcast.id); }}
+          className={`flex-shrink-0 p-2 rounded-full transition-all duration-200 ${
+            isSaved 
+              ? 'bg-orange-100 text-orange-500' 
+              : 'bg-stone-50 text-stone-400 hover:bg-stone-100 hover:text-stone-600'
+          }`}
+        >
+          {isSaved ? <Icons.BookmarkFilled /> : <Icons.Bookmark />}
+        </button>
       </div>
 
       {/* Tags */}
@@ -819,8 +810,8 @@ const PodcastCard = ({ podcast, onSave, isSaved, index }) => {
         ))}
       </div>
 
-      {/* Description - Expandable */}
-      <p className={`text-sm text-stone-600 leading-relaxed mb-4 transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'}`}>
+      {/* Description - Full content */}
+      <p className="text-sm text-stone-600 leading-relaxed mb-4">
         {podcast.description}
       </p>
 
@@ -1026,6 +1017,14 @@ const FilterPanel = ({ filters, setFilters, isOpen, onClose }) => {
                 Clear all filters
               </button>
             )}
+
+            {/* Apply button */}
+            <button
+              onClick={onClose}
+              className="w-full py-3 text-sm font-medium bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors mt-4"
+            >
+              Apply Filters
+            </button>
           </div>
         </div>
       </div>
@@ -1630,24 +1629,26 @@ export default function SignalFM() {
                   <Icons.Search />
                 </div>
               </div>
-              <button
-                onClick={() => setFilterOpen(true)}
-                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl border transition-colors ${
-                  activeFilterCount > 0 
-                    ? 'bg-stone-900 text-white border-stone-900' 
-                    : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
-                }`}
-              >
-                <Icons.Filter />
-                Filters
-                {activeFilterCount > 0 && (
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                    activeFilterCount > 0 ? 'bg-white text-stone-900' : 'bg-stone-100 text-stone-600'
-                  }`}>
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
+              {currentView === 'discover' && (
+                <button
+                  onClick={() => setFilterOpen(true)}
+                  className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl border transition-colors ${
+                    activeFilterCount > 0 
+                      ? 'bg-stone-900 text-white border-stone-900' 
+                      : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
+                  }`}
+                >
+                  <Icons.Filter />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                      activeFilterCount > 0 ? 'bg-white text-stone-900' : 'bg-stone-100 text-stone-600'
+                    }`}>
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
 
             <div className="flex gap-8">
